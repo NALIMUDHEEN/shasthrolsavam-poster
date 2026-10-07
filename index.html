@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KYHSS Shasthrolsavam Poster Generator</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
@@ -22,8 +22,6 @@
   
   html, body {
     width: 100%;
-    margin: 0;
-    padding: 0;
     overflow-x: hidden;
     background: #090e1c;
   }
@@ -36,11 +34,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 8px 4px 40px;
+    padding: 10px 4px 40px;
   }
 
   h1 { 
-    font-size: 17px; 
+    font-size: 18px; 
     font-weight: 800; 
     margin: 4px 0 2px; 
     text-align: center; 
@@ -290,7 +288,7 @@
       <!-- 5. Student Name -->
       <div class="field-group">
         <label for="nameInput">Student Name</label>
-        <input type="text" id="nameInput" value="NALIMUDHEEN MUHAMMED" placeholder="E.g. NALIMUDHEEN MUHAMMED" maxlength="40" autocomplete="off">
+        <input type="text" id="nameInput" value="Name" placeholder="E.g. NALIMUDHEEN MUHAMMED" maxlength="40" autocomplete="off">
       </div>
 
       <button class="btn btn-download" type="button" id="downloadBtn">⬇ Download Poster (2160 × 2700)</button>
@@ -330,13 +328,12 @@
 
   const LEFT_X = 340;
 
-  // Exact coordinates of the photo hole in your Frame Common PNG:
-  // Starts at y: 886 and goes down to y: 1776 (height = 890px)
+  // Window coordinates: height is 894px (covers y: 886 to y: 1780)
   const FRAME = {
     x: 1076,
     y: 886,
     w: 728,
-    h: 890
+    h: 894
   };
 
   const ITEM_BLOCK = {
@@ -346,7 +343,7 @@
     lineHeight: 180
   };
 
-  // Student name sits cleanly below the hole at y = 1860 (where it was originally)
+  // Student name sits cleanly below the window at y = 1860
   const NAME_POS = {
     x: 1440,
     y: 1860,
@@ -382,13 +379,12 @@
 
     // ==============================================================
     // 1. LAYER 1 (BOTTOM): DRAW STUDENT PHOTO FIRST
-    // It sits completely under the poster and covers the full 890px height
+    // Bleeds 60px past all 4 sides of the window so no gap or black lip appears
     // ==============================================================
     if (photoPlacement && photoPlacement.img) {
       ctx.save();
-      // Bleed rectangle extending 30px outside the cutout so no gaps exist
       ctx.beginPath();
-      ctx.rect(FRAME.x - 30, FRAME.y - 30, FRAME.w + 60, FRAME.h + 60);
+      ctx.rect(FRAME.x - 60, FRAME.y - 60, FRAME.w + 120, FRAME.h + 120);
       ctx.clip();
 
       ctx.drawImage(
@@ -403,7 +399,7 @@
 
     // ==============================================================
     // 2. LAYER 2 (MIDDLE): DRAW POSTER TEMPLATE ON TOP
-    // The transparent hole shows the photo; the frame borders mask the edges
+    // Cutout naturally reveals the photo and seamlessly masks borders
     // ==============================================================
     if (templateImg.complete && templateImg.naturalWidth > 0) {
       ctx.drawImage(templateImg, 0, 0, CW, CH);
@@ -469,7 +465,7 @@
       ctx.restore();
     }
 
-    // Student Name (Restored to y: 1860, directly below the frame cutout)
+    // Student Name (At y = 1860, directly beneath cutout)
     const nameText = document.getElementById('nameInput').value.trim().toUpperCase();
     if (nameText) {
       ctx.save();
@@ -506,7 +502,7 @@
   let pendingImg = null, baseScale = 1, zoom = 1, panX = 0, panY = 0;
   let dragging = false, startX = 0, startY = 0, initialPanX = 0, initialPanY = 0;
   const PREVIEW_W = 230;
-  const PREVIEW_H = Math.round(PREVIEW_W * (FRAME.h / FRAME.w)); // Proportion matching the 728x890 hole
+  const PREVIEW_H = Math.round(PREVIEW_W * (FRAME.h / FRAME.w)); // Exact 728x894 ratio
 
   function getCropDrawMetrics() {
     if (!pendingImg || !pendingImg.width) return { x: 0, y: 0, w: PREVIEW_W, h: PREVIEW_H };
@@ -525,8 +521,8 @@
     const scale = baseScale * zoom;
     const w = pendingImg.width * scale;
     const h = pendingImg.height * scale;
-    const maxPanX = Math.max(0, (w - PREVIEW_W) / 2);
-    const maxPanY = Math.max(0, (h - PREVIEW_H) / 2);
+    const maxPanX = Math.max(0, (w - PREVIEW_W) / 2) + 20;
+    const maxPanY = Math.max(0, (h - PREVIEW_H) / 2) + 40;
     panX = Math.min(maxPanX, Math.max(-maxPanX, panX));
     panY = Math.min(maxPanY, Math.max(-maxPanY, panY));
   }
@@ -550,7 +546,8 @@
     const naturalH = img.naturalHeight || img.height || 1;
 
     baseScale = Math.max(PREVIEW_W / naturalW, PREVIEW_H / naturalH);
-    zoom = 1; panX = 0; panY = 0; zoomRange.value = 100;
+    zoom = 1.05; // 5% overscale to prevent border gaps
+    panX = 0; panY = 0; zoomRange.value = 105;
     
     drawCropPreview();
     cropModal.classList.add('open');
