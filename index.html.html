@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KYHSS Shasthrolsavam Poster Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
+
+  :root {
+    --bg: #090e1c;
+    --card: #141b2f;
+    --border: #232f4e;
+    --accent: #2e62f5;
+    --accent-hover: #1b4cdb;
+    --text-main: #f0f4ff;
+    --text-muted: #8fa0c7;
+    --white: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(circle at 10% 0%, #152244, #080c17 60%);
+    font-family: 'Montserrat', sans-serif;
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 60px;
+  }
+
+  h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; text-align: center; }
+  p.subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; text-align: center; }
+
+  .main-wrapper {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .stage-box {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--border);
+    background: #03060d;
+  }
+  .stage-box canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .form-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+  input[type="text"], select {
+    width: 100%;
+    padding: 11px 13px;
+    background: #0c1221;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-main);
+    outline: none;
+    transition: border 0.2s;
+  }
+  input[type="text"]:focus, select:focus {
+    border-color: var(--accent);
+  }
+
+  .photo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .thumb-preview {
+    width: 64px;
+    height: 64px;
+    border-radius: 10px;
+    border: 2px dashed #314470;
+    background: #0b1122;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .thumb-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .btn-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 9px;
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.15s ease-in-out;
+  }
+  .btn-primary { background: var(--accent); color: var(--white); }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-secondary { background: #1a2542; color: #bed0fa; border: 1px solid var(--border); }
+  .btn-secondary:hover:not(:disabled) { background: #223259; }
+  .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-danger { background: transparent; color: #e06c75; border: 1px solid #4a2529; }
+  .btn-download {
+    background: linear-gradient(135deg, #2e62f5, #1440b8);
+    font-size: 15px;
+    padding: 15px;
+    color: var(--white);
+    margin-top: 4px;
+    box-shadow: 0 10px 24px rgba(46, 98, 245, 0.35);
+  }
+
+  /* Offline Template Helper Banner */
+  .offline-banner {
+    background: #18223d;
+    border: 1px dashed var(--accent);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* Crop Modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 6, 15, 0.9);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    padding: 18px;
+  }
+  .modal-backdrop.open { display: flex !important; }
+  .modal-sheet {
+    background: #151d33;
+    border: 1px solid #2a395e;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 360px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+  }
+  .crop-viewport {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #080d19;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    border: 2px solid #2b395d;
+  }
+  .crop-viewport:active { cursor: grabbing; }
+  .crop-viewport canvas { display: block; }
+  .zoom-slider-wrap {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .zoom-slider-wrap input[type="range"] {
+    flex: 1;
+    accent-color: var(--accent);
+  }
+</style>
+</head>
+<body>
+
+  <h1>KYHSS Shasthrolsavam Poster</h1>
+  <p class="subtitle">2160 × 2700 High-Res Poster Generator</p>
+
+  <div class="main-wrapper">
+    <div class="stage-box">
+      <canvas id="posterCanvas" width="2160" height="2700"></canvas>
+    </div>
+
+    <!-- Offline Template Loader for Local Hard-Drive Testing -->
+    <div class="offline-banner" id="localHelper">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-weight:700; color:#bed0fa;">⚙️ Local Frame Loader</span>
+        <button type="button" class="btn btn-secondary" id="loadLocalFrameBtn" style="width:auto; padding:4px 10px; font-size:11px;">
+          Choose Frame PNG
+        </button>
+      </div>
+      <span style="font-size:11px; color:var(--text-muted);">
+        (Select Frame Common A / B / C if testing directly from your computer drive)
+      </span>
+      <input type="file" id="localFrameInput" accept="image/png, image/jpeg" style="display:none;">
+    </div>
+
+    <div class="form-card">
+      <!-- 1. Grade Selection -->
+      <div class="field-group">
+        <label for="gradeSelect">1. Grade (Swaps Frame)</label>
+        <select id="gradeSelect">
+          <option value="A" selected>A Grade (Frame Common A.png)</option>
+          <option value="B">B Grade (Frame Common B.png)</option>
+          <option value="C">C Grade (Frame Common C.png)</option>
+        </select>
+      </div>
+
+      <!-- 2. Student Photo Upload -->
+      <div class="field-group">
+        <label>2. Student Photo</label>
+        <div class="photo-row">
+          <div class="thumb-preview" id="photoThumb">📷</div>
+          <div class="btn-group">
+            <button class="btn btn-primary" type="button" id="pickPhotoBtn">Upload Photo</button>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-secondary" type="button" id="recropPhotoBtn" disabled>Adjust Crop</button>
+              <button class="btn btn-danger" type="button" id="resetPhotoBtn" disabled>✕</button>
+            </div>
+          </div>
+        </div>
+        <input type="file" id="filePhoto" accept="image/*">
+      </div>
+
+      <!-- 3. Category -->
+      <div class="field-group">
+        <label for="catSelect">3. Category</label>
+        <select id="catSelect">
+          <option value="">— None —</option>
+          <option value="LP">LP (Lower Primary)</option>
+          <option value="UP" selected>UP (Upper Primary)</option>
+          <option value="HS">HS (High School)</option>
+          <option value="HSS">HSS (Higher Secondary)</option>
+        </select>
+      </div>
+
+      <!-- 4. Item Name -->
+      <div class="field-group">
+        <label for="itemInput">4. Item Name</label>
+        <input type="text" id="itemInput" value="PAPER CRAFT MAKING" placeholder="E.g. PAPER CRAFT MAKING" maxlength="50" autocomplete="off">
+      </div>
+
+      <!-- 5. Student Name -->
+      <div class="field-group">
+        <label for="nameInput">5. Student Name</label>
+        <input type="text" id="nameInput" value="Name" placeholder="E.g. Name" maxlength="40" autocomplete="off">
+      </div>
+
+      <button class="btn btn-download" type="button" id="downloadBtn">⬇ Download Poster (2160 × 2700)</button>
+    </div>
+  </div>
+
+  <!-- Crop Modal with Drag-to-Pan & Zoom Slider -->
+  <div class="modal-backdrop" id="cropModal">
+    <div class="modal-sheet">
+      <h3 style="font-size: 16px; font-weight: 800;">Adjust Photo</h3>
+      <p style="font-size: 12px; color: var(--text-muted); text-align: center;">Drag to position, use slider to zoom</p>
+      
+      <div class="crop-viewport" id="cropViewport">
+        <canvas id="cropCanvas"></canvas>
+      </div>
+
+      <div class="zoom-slider-wrap">
+        <span style="font-size: 12px;">🔍-</span>
+        <input type="range" id="zoomRange" min="100" max="350" value="100">
+        <span style="font-size: 12px;">🔍+</span>
+      </div>
+
+      <div style="display:flex; width:100%; gap:8px;">
+        <button class="btn btn-secondary" type="button" id="cropCancelBtn">Cancel</button>
+        <button class="btn btn-primary" type="button" id="cropConfirmBtn">Apply</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function() {
+  const CW = 2160;
+  const CH = 2700;
+
+  const canvas = document.getElementById('posterCanvas');
+  const ctx = canvas.getContext('2d');
+
+  const LEFT_X = 340;
+
+  const FRAME = {
+    x: 1080,
+    y: 886,
+    w: 720,
+    h: 890,
+    radius: 96
+  };
+
+  const ITEM_BLOCK = {
+    x: LEFT_X,
+    y: 440,
+    maxWidth: 1350,
+    lineHeight: 180
+  };
+
+  const NAME_POS = {
+    x: 1440,
+    y: 1860,
+    maxWidth: 700
+  };
+
+  const WARM_WHITE = '#f7f9fc';
+  const WARM_WHITE_MUTED = 'rgba(247, 249, 252, 0.85)';
+
+  // Grade frame dictionary
+  const GRADE_TEMPLATES = {
+    'A': 'Frame Common A.png',
+    'B': 'Frame Common B.png',
+    'C': 'Frame Common C.png'
+  };
+
+  const localLoadedFrames = {};
+  const templateImg = new Image();
+  templateImg.crossOrigin = 'anonymous';
+
+  function updateTemplateSource() {
+    const selectedGrade = document.getElementById('gradeSelect').value;
+    if (localLoadedFrames[selectedGrade]) {
+      templateImg.src = localLoadedFrames[selectedGrade];
+    } else {
+      templateImg.src = encodeURI(GRADE_TEMPLATES[selectedGrade] || 'Frame Common A.png');
+    }
+  }
+
+  templateImg.onload = () => { draw(); };
+  templateImg.onerror = () => { draw(); };
+
+  // Local file picker for Frame Common testing
+  const localFrameInput = document.getElementById('localFrameInput');
+  document.getElementById('loadLocalFrameBtn').addEventListener('click', () => localFrameInput.click());
+  localFrameInput.addEventListener('change', e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      const selectedGrade = document.getElementById('gradeSelect').value;
+      localLoadedFrames[selectedGrade] = ev.target.result;
+      templateImg.src = ev.target.result;
+    };
+    r.readAsDataURL(file);
+    localFrameInput.value = '';
+  });
+
+  updateTemplateSource();
+
+  let photoPlacement = null;
+
+  function roundRectPath(c, x, y, w, h, r) {
+    const rr = Math.min(r, w / 2, h / 2);
+    c.beginPath();
+    c.moveTo(x + rr, y);
+    c.arcTo(x + w, y, x + w, y + h, rr);
+    c.arcTo(x + w, y + h, x, y + h, rr);
+    c.arcTo(x, y + h, x, y, rr);
+    c.arcTo(x, y, x + w, y, rr);
+    c.closePath();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, CW, CH);
+
+    // 1. Draw Background Frame
+    if (templateImg.complete && templateImg.naturalWidth > 0) {
+      ctx.drawImage(templateImg, 0, 0, CW, CH);
+    } else {
+      // Fallback guide if file:// blocks auto loading
+      ctx.fillStyle = "#0a1329";
+      ctx.fillRect(0, 0, CW, CH);
+      ctx.fillStyle = "rgba(255,255,255,0.2)";
+      ctx.font = "700 48px Montserrat";
+      ctx.textAlign = "center";
+      ctx.fillText("Frame Common will display here when hosted on GitHub", CW / 2, CH / 2 - 40);
+      ctx.font = "500 36px Montserrat";
+      ctx.fillText("(Or click 'Choose Frame PNG' above to preview locally)", CW / 2, CH / 2 + 30);
+    }
+
+    // 2. Draw User Photo inside cutout
+    if (photoPlacement && photoPlacement.img) {
+      ctx.save();
+      roundRectPath(ctx, FRAME.x, FRAME.y, FRAME.w, FRAME.h, FRAME.radius);
+      ctx.clip();
+      ctx.drawImage(
+        photoPlacement.img,
+        FRAME.x + photoPlacement.x,
+        FRAME.y + photoPlacement.y,
+        photoPlacement.w,
+        photoPlacement.h
+      );
+      ctx.restore();
+    }
+
+    // 3. Render Item Name in Warm White
+    const itemText = document.getElementById('itemInput').value.trim().toUpperCase();
+    const catValue = document.getElementById('catSelect').value.trim();
+    let currentY = ITEM_BLOCK.y;
+
+    if (itemText) {
+      ctx.save();
+      ctx.fillStyle = WARM_WHITE;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+
+      let fontSize = 160;
+      ctx.font = `800 ${fontSize}px "Montserrat", sans-serif`;
+
+      const words = itemText.split(' ');
+      const lines = [];
+      let currentLine = words[0];
+
+      for (let i = 1; i < words.length; i++) {
+        const testLine = currentLine + ' ' + words[i];
+        if (ctx.measureText(testLine).width <= ITEM_BLOCK.maxWidth) {
+          currentLine = testLine;
+        } else {
+          lines.push(currentLine);
+          currentLine = words[i];
+        }
+      }
+      lines.push(currentLine);
+
+      for (const line of lines) {
+        while (ctx.measureText(line).width > ITEM_BLOCK.maxWidth && fontSize > 70) {
+          fontSize -= 4;
+          ctx.font = `800 ${fontSize}px "Montserrat", sans-serif`;
+        }
+      }
+
+      const adjustedLineHeight = fontSize * 1.08;
+      lines.forEach(l => {
+        ctx.fillText(l, ITEM_BLOCK.x, currentY);
+        currentY += adjustedLineHeight;
+      });
+      ctx.restore();
+    }
+
+    // 4. Render Category ("CATEGORY : UP")
+    if (catValue) {
+      ctx.save();
+      ctx.fillStyle = WARM_WHITE_MUTED;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.font = '600 46px "Montserrat", sans-serif';
+      ctx.fillText(`CATEGORY : ${catValue}`, LEFT_X, currentY + 16);
+      ctx.restore();
+    }
+
+    // 5. Render Student Name
+    const nameText = document.getElementById('nameInput').value.trim().toUpperCase();
+    if (nameText) {
+      ctx.save();
+      ctx.fillStyle = WARM_WHITE;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      let nameSize = 48;
+      ctx.font = `600 ${nameSize}px "Montserrat", sans-serif`;
+
+      while (ctx.measureText(nameText).width > NAME_POS.maxWidth && nameSize > 24) {
+        nameSize -= 2;
+        ctx.font = `600 ${nameSize}px "Montserrat", sans-serif`;
+      }
+
+      ctx.fillText(nameText, NAME_POS.x, NAME_POS.y);
+      ctx.restore();
+    }
+  }
+
+  ['itemInput', 'nameInput'].forEach(id => {
+    document.getElementById(id).addEventListener('input', draw);
+  });
+  document.getElementById('catSelect').addEventListener('change', draw);
+  document.getElementById('gradeSelect').addEventListener('change', updateTemplateSource);
+
+  /* --- CROPPER IMPLEMENTATION --- */
+  const cropModal = document.getElementById('cropModal');
+  const cropCanvas = document.getElementById('cropCanvas');
+  const cropCtx = cropCanvas.getContext('2d');
+  const cropViewport = document.getElementById('cropViewport');
+  const zoomRange = document.getElementById('zoomRange');
+
+  let pendingImg = null, baseScale = 1, zoom = 1, panX = 0, panY = 0;
+  let dragging = false, startX = 0, startY = 0, initialPanX = 0, initialPanY = 0;
+  const PREVIEW_W = 240;
+  const PREVIEW_H = Math.round(PREVIEW_W * (FRAME.h / FRAME.w));
+
+  function getCropDrawMetrics() {
+    if (!pendingImg || !pendingImg.width) return { x: 0, y: 0, w: PREVIEW_W, h: PREVIEW_H };
+    const scale = baseScale * zoom;
+    const w = pendingImg.width * scale;
+    const h = pendingImg.height * scale;
+    return {
+      x: PREVIEW_W / 2 - w / 2 + panX,
+      y: PREVIEW_H / 2 - h / 2 + panY,
+      w, h
+    };
+  }
+
+  function clampPan() {
+    if (!pendingImg || !pendingImg.width) return;
+    const scale = baseScale * zoom;
+    const w = pendingImg.width * scale;
+    const h = pendingImg.height * scale;
+    const maxPanX = Math.max(0, (w - PREVIEW_W) / 2);
+    const maxPanY = Math.max(0, (h - PREVIEW_H) / 2);
+    panX = Math.min(maxPanX, Math.max(-maxPanX, panX));
+    panY = Math.min(maxPanY, Math.max(-maxPanY, panY));
+  }
+
+  function drawCropPreview() {
+    cropCtx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
+    cropCtx.save();
+    const radiusPreview = FRAME.radius * (PREVIEW_W / FRAME.w);
+    roundRectPath(cropCtx, 0, 0, PREVIEW_W, PREVIEW_H, radiusPreview);
+    cropCtx.clip();
+
+    if (pendingImg && pendingImg.complete && pendingImg.width > 0) {
+      const d = getCropDrawMetrics();
+      cropCtx.drawImage(pendingImg, d.x, d.y, d.w, d.h);
+    }
+    cropCtx.restore();
+
+    cropCtx.save();
+    roundRectPath(cropCtx, 1, 1, PREVIEW_W - 2, PREVIEW_H - 2, radiusPreview);
+    cropCtx.lineWidth = 2;
+    cropCtx.strokeStyle = 'rgba(255,255,255,0.4)';
+    cropCtx.stroke();
+    cropCtx.restore();
+  }
+
+  function openCropModal(img) {
+    pendingImg = img;
+    cropCanvas.width = PREVIEW_W;
+    cropCanvas.height = PREVIEW_H;
+    cropViewport.style.width = PREVIEW_W + 'px';
+    cropViewport.style.height = PREVIEW_H + 'px';
+
+    const naturalW = img.naturalWidth || img.width || 1;
+    const naturalH = img.naturalHeight || img.height || 1;
+
+    baseScale = Math.max(PREVIEW_W / naturalW, PREVIEW_H / naturalH);
+    zoom = 1; panX = 0; panY = 0; zoomRange.value = 100;
+    
+    drawCropPreview();
+    cropModal.classList.add('open');
+  }
+
+  cropViewport.addEventListener('pointerdown', e => {
+    if (!pendingImg) return;
+    dragging = true;
+    cropViewport.setPointerCapture(e.pointerId);
+    startX = e.clientX;
+    startY = e.clientY;
+    initialPanX = panX;
+    initialPanY = panY;
+  });
+
+  cropViewport.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    panX = initialPanX + (e.clientX - startX);
+    panY = initialPanY + (e.clientY - startY);
+    clampPan();
+    drawCropPreview();
+  });
+
+  function stopDrag(e) {
+    if (dragging) {
+      dragging = false;
+      try { cropViewport.releasePointerCapture(e.pointerId); } catch(err) {}
+    }
+  }
+
+  cropViewport.addEventListener('pointerup', stopDrag);
+  cropViewport.addEventListener('pointercancel', stopDrag);
+
+  zoomRange.addEventListener('input', () => {
+    zoom = parseInt(zoomRange.value, 10) / 100;
+    clampPan();
+    drawCropPreview();
+  });
+
+  document.getElementById('cropCancelBtn').addEventListener('click', () => {
+    cropModal.classList.remove('open');
+  });
+
+  document.getElementById('cropConfirmBtn').addEventListener('click', () => {
+    const d = getCropDrawMetrics();
+    const mapScale = FRAME.w / PREVIEW_W;
+    photoPlacement = {
+      img: pendingImg,
+      x: (d.x) * mapScale,
+      y: (d.y) * mapScale,
+      w: d.w * mapScale,
+      h: d.h * mapScale
+    };
+    document.getElementById('recropPhotoBtn').disabled = false;
+    document.getElementById('resetPhotoBtn').disabled = false;
+
+    const thumb = document.getElementById('photoThumb');
+    thumb.innerHTML = '';
+    const imgEl = document.createElement('img');
+    imgEl.src = pendingImg.src;
+    thumb.appendChild(imgEl);
+
+    cropModal.classList.remove('open');
+    draw();
+  });
+
+  // Photo Input Handling
+  const filePhoto = document.getElementById('filePhoto');
+  document.getElementById('pickPhotoBtn').addEventListener('click', () => {
+    filePhoto.value = '';
+    filePhoto.click();
+  });
+
+  filePhoto.addEventListener('change', e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        openCropModal(img);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('recropPhotoBtn').addEventListener('click', () => {
+    if (photoPlacement && photoPlacement.img) {
+      openCropModal(photoPlacement.img);
+    }
+  });
+
+  document.getElementById('resetPhotoBtn').addEventListener('click', () => {
+    photoPlacement = null;
+    document.getElementById('photoThumb').innerHTML = '📷';
+    document.getElementById('recropPhotoBtn').disabled = true;
+    document.getElementById('resetPhotoBtn').disabled = true;
+    draw();
+  });
+
+  // Download Output
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    draw();
+    const safeName = (document.getElementById('nameInput').value.trim() || 'poster').replace(/\s+/g, '_');
+    canvas.toBlob(blob => {
+      if (!blob) return alert('Failed to create poster image.');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Poster_${safeName}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }, 'image/jpeg', 0.95);
+  });
+})();
+</script>
+</body>
+</html>
