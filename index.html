@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>KYHSS Shasthrolsavam Poster Generator</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
@@ -19,6 +19,12 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  html, body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
   body {
     background: radial-gradient(circle at 10% 0%, #152244, #080c17 60%);
     font-family: 'Montserrat', sans-serif;
@@ -27,26 +33,39 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 24px 16px 60px;
+    padding: 16px 10px 48px;
   }
 
-  h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; text-align: center; }
-  p.subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; text-align: center; }
+  h1 { 
+    font-size: 19px; 
+    font-weight: 800; 
+    margin-bottom: 3px; 
+    text-align: center; 
+    width: 100%;
+  }
+  p.subtitle { 
+    font-size: 12px; 
+    color: var(--text-muted); 
+    margin-bottom: 14px; 
+    text-align: center; 
+    width: 100%;
+  }
 
   .main-wrapper {
     width: 100%;
-    max-width: 480px;
+    max-width: 540px; /* fills mobile screens while staying neat on desktops/tablets */
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
   }
 
+  /* Full-width aspect-ratio stage matching 2160x2700 (4:5) */
   .stage-box {
     width: 100%;
     aspect-ratio: 4 / 5;
-    border-radius: 16px;
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65);
     border: 1px solid var(--border);
     background: #03060d;
   }
@@ -60,17 +79,18 @@
   .form-card {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 16px;
+    border-radius: 14px;
+    padding: 16px 14px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 13px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.4);
   }
 
   .field-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
   }
   label {
     font-size: 11px;
@@ -81,7 +101,7 @@
   }
   input[type="text"], select {
     width: 100%;
-    padding: 11px 13px;
+    padding: 11px 12px;
     background: #0c1221;
     border: 1.5px solid var(--border);
     border-radius: 9px;
@@ -99,18 +119,18 @@
   .photo-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
   }
   .thumb-preview {
-    width: 64px;
-    height: 64px;
+    width: 60px;
+    height: 60px;
     border-radius: 10px;
     border: 2px dashed #314470;
     background: #0b1122;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 22px;
     overflow: hidden;
     flex-shrink: 0;
   }
@@ -128,7 +148,7 @@
 
   .btn {
     width: 100%;
-    padding: 11px 14px;
+    padding: 11px 12px;
     border-radius: 9px;
     border: none;
     font-size: 13px;
@@ -149,35 +169,23 @@
   .btn-download {
     background: linear-gradient(135deg, #2e62f5, #1440b8);
     font-size: 15px;
-    padding: 15px;
+    padding: 14px;
     color: var(--white);
     margin-top: 4px;
     box-shadow: 0 10px 24px rgba(46, 98, 245, 0.35);
-  }
-
-  /* Offline Template Helper Banner */
-  .offline-banner {
-    background: #18223d;
-    border: 1px dashed var(--accent);
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
   }
 
   /* Crop Modal */
   .modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(3, 6, 15, 0.9);
+    background: rgba(3, 6, 15, 0.92);
     backdrop-filter: blur(6px);
     display: none;
     align-items: center;
     justify-content: center;
     z-index: 999999;
-    padding: 18px;
+    padding: 16px;
   }
   .modal-backdrop.open { display: flex !important; }
   .modal-sheet {
@@ -185,12 +193,12 @@
     border: 1px solid #2a395e;
     border-radius: 18px;
     width: 100%;
-    max-width: 360px;
-    padding: 20px;
+    max-width: 340px;
+    padding: 18px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
+    gap: 13px;
     box-shadow: 0 25px 60px rgba(0,0,0,0.8);
   }
   .crop-viewport {
@@ -227,24 +235,10 @@
       <canvas id="posterCanvas" width="2160" height="2700"></canvas>
     </div>
 
-    <!-- Offline Template Loader for Local Hard-Drive Testing -->
-    <div class="offline-banner" id="localHelper">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-weight:700; color:#bed0fa;">⚙️ Local Frame Loader</span>
-        <button type="button" class="btn btn-secondary" id="loadLocalFrameBtn" style="width:auto; padding:4px 10px; font-size:11px;">
-          Choose Frame PNG
-        </button>
-      </div>
-      <span style="font-size:11px; color:var(--text-muted);">
-        (Select Frame Common A / B / C if testing directly from your computer drive)
-      </span>
-      <input type="file" id="localFrameInput" accept="image/png, image/jpeg" style="display:none;">
-    </div>
-
     <div class="form-card">
       <!-- 1. Grade Selection -->
       <div class="field-group">
-        <label for="gradeSelect">1. Grade (Swaps Frame)</label>
+        <label for="gradeSelect">Grade (Swaps Background Poster)</label>
         <select id="gradeSelect">
           <option value="A" selected>A Grade (Frame Common A.png)</option>
           <option value="B">B Grade (Frame Common B.png)</option>
@@ -252,9 +246,9 @@
         </select>
       </div>
 
-      <!-- 2. Student Photo Upload -->
+      <!-- 2. Student Photo Upload (Native file input strictly hidden) -->
       <div class="field-group">
-        <label>2. Student Photo</label>
+        <label>Student Photo</label>
         <div class="photo-row">
           <div class="thumb-preview" id="photoThumb">📷</div>
           <div class="btn-group">
@@ -265,12 +259,12 @@
             </div>
           </div>
         </div>
-        <input type="file" id="filePhoto" accept="image/*">
+        <input type="file" id="filePhoto" accept="image/*" style="display:none !important;">
       </div>
 
       <!-- 3. Category -->
       <div class="field-group">
-        <label for="catSelect">3. Category</label>
+        <label for="catSelect">Category</label>
         <select id="catSelect">
           <option value="">— None —</option>
           <option value="LP">LP (Lower Primary)</option>
@@ -282,14 +276,14 @@
 
       <!-- 4. Item Name -->
       <div class="field-group">
-        <label for="itemInput">4. Item Name</label>
+        <label for="itemInput">Item Name</label>
         <input type="text" id="itemInput" value="PAPER CRAFT MAKING" placeholder="E.g. PAPER CRAFT MAKING" maxlength="50" autocomplete="off">
       </div>
 
       <!-- 5. Student Name -->
       <div class="field-group">
-        <label for="nameInput">5. Student Name</label>
-        <input type="text" id="nameInput" value="Name" placeholder="E.g. Name" maxlength="40" autocomplete="off">
+        <label for="nameInput">Student Name</label>
+        <input type="text" id="nameInput" value="NALIMUDHEEN MUHAMMED" placeholder="E.g. NALIMUDHEEN MUHAMMED" maxlength="40" autocomplete="off">
       </div>
 
       <button class="btn btn-download" type="button" id="downloadBtn">⬇ Download Poster (2160 × 2700)</button>
@@ -329,12 +323,12 @@
 
   const LEFT_X = 340;
 
+  // Window coordinates with small tucking buffer so photo extends under the frame border
   const FRAME = {
-    x: 1080,
-    y: 886,
-    w: 720,
-    h: 890,
-    radius: 96
+    x: 1076,
+    y: 882,
+    w: 728,
+    h: 896
   };
 
   const ITEM_BLOCK = {
@@ -353,83 +347,37 @@
   const WARM_WHITE = '#f7f9fc';
   const WARM_WHITE_MUTED = 'rgba(247, 249, 252, 0.85)';
 
-  // Grade frame dictionary
   const GRADE_TEMPLATES = {
     'A': 'Frame Common A.png',
     'B': 'Frame Common B.png',
     'C': 'Frame Common C.png'
   };
 
-  const localLoadedFrames = {};
   const templateImg = new Image();
   templateImg.crossOrigin = 'anonymous';
 
   function updateTemplateSource() {
     const selectedGrade = document.getElementById('gradeSelect').value;
-    if (localLoadedFrames[selectedGrade]) {
-      templateImg.src = localLoadedFrames[selectedGrade];
-    } else {
-      templateImg.src = encodeURI(GRADE_TEMPLATES[selectedGrade] || 'Frame Common A.png');
-    }
+    templateImg.src = encodeURI(GRADE_TEMPLATES[selectedGrade] || 'Frame Common A.png');
   }
 
   templateImg.onload = () => { draw(); };
   templateImg.onerror = () => { draw(); };
 
-  // Local file picker for Frame Common testing
-  const localFrameInput = document.getElementById('localFrameInput');
-  document.getElementById('loadLocalFrameBtn').addEventListener('click', () => localFrameInput.click());
-  localFrameInput.addEventListener('change', e => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    const r = new FileReader();
-    r.onload = ev => {
-      const selectedGrade = document.getElementById('gradeSelect').value;
-      localLoadedFrames[selectedGrade] = ev.target.result;
-      templateImg.src = ev.target.result;
-    };
-    r.readAsDataURL(file);
-    localFrameInput.value = '';
-  });
-
   updateTemplateSource();
 
   let photoPlacement = null;
 
-  function roundRectPath(c, x, y, w, h, r) {
-    const rr = Math.min(r, w / 2, h / 2);
-    c.beginPath();
-    c.moveTo(x + rr, y);
-    c.arcTo(x + w, y, x + w, y + h, rr);
-    c.arcTo(x + w, y + h, x, y + h, rr);
-    c.arcTo(x, y + h, x, y, rr);
-    c.arcTo(x, y, x + w, y, rr);
-    c.closePath();
-  }
-
   function draw() {
     ctx.clearRect(0, 0, CW, CH);
 
-    // 1. Draw Background Frame
-    if (templateImg.complete && templateImg.naturalWidth > 0) {
-      ctx.drawImage(templateImg, 0, 0, CW, CH);
-    } else {
-      // Fallback guide if file:// blocks auto loading
-      ctx.fillStyle = "#0a1329";
-      ctx.fillRect(0, 0, CW, CH);
-      ctx.fillStyle = "rgba(255,255,255,0.2)";
-      ctx.font = "700 48px Montserrat";
-      ctx.textAlign = "center";
-      ctx.fillText("Frame Common will display here when hosted on GitHub", CW / 2, CH / 2 - 40);
-      ctx.font = "500 36px Montserrat";
-      ctx.fillText("(Or click 'Choose Frame PNG' above to preview locally)", CW / 2, CH / 2 + 30);
-    }
-
-    // 2. Draw User Photo inside cutout
+    // 1. DRAW STUDENT PHOTO BEHIND THE TEMPLATE
     if (photoPlacement && photoPlacement.img) {
       ctx.save();
-      roundRectPath(ctx, FRAME.x, FRAME.y, FRAME.w, FRAME.h, FRAME.radius);
+      ctx.beginPath();
+      ctx.rect(FRAME.x - 10, FRAME.y - 10, FRAME.w + 20, FRAME.h + 20);
       ctx.clip();
+
       ctx.drawImage(
         photoPlacement.img,
         FRAME.x + photoPlacement.x,
@@ -440,7 +388,12 @@
       ctx.restore();
     }
 
-    // 3. Render Item Name in Warm White
+    // 2. DRAW THE PNG TEMPLATE OVER THE PHOTO
+    if (templateImg.complete && templateImg.naturalWidth > 0) {
+      ctx.drawImage(templateImg, 0, 0, CW, CH);
+    }
+
+    // 3. DRAW ITEM NAME
     const itemText = document.getElementById('itemInput').value.trim().toUpperCase();
     const catValue = document.getElementById('catSelect').value.trim();
     let currentY = ITEM_BLOCK.y;
@@ -484,7 +437,7 @@
       ctx.restore();
     }
 
-    // 4. Render Category ("CATEGORY : UP")
+    // Category (CATEGORY : UP)
     if (catValue) {
       ctx.save();
       ctx.fillStyle = WARM_WHITE_MUTED;
@@ -495,7 +448,7 @@
       ctx.restore();
     }
 
-    // 5. Render Student Name
+    // Student Name
     const nameText = document.getElementById('nameInput').value.trim().toUpperCase();
     if (nameText) {
       ctx.save();
@@ -559,23 +512,10 @@
 
   function drawCropPreview() {
     cropCtx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
-    cropCtx.save();
-    const radiusPreview = FRAME.radius * (PREVIEW_W / FRAME.w);
-    roundRectPath(cropCtx, 0, 0, PREVIEW_W, PREVIEW_H, radiusPreview);
-    cropCtx.clip();
-
     if (pendingImg && pendingImg.complete && pendingImg.width > 0) {
       const d = getCropDrawMetrics();
       cropCtx.drawImage(pendingImg, d.x, d.y, d.w, d.h);
     }
-    cropCtx.restore();
-
-    cropCtx.save();
-    roundRectPath(cropCtx, 1, 1, PREVIEW_W - 2, PREVIEW_H - 2, radiusPreview);
-    cropCtx.lineWidth = 2;
-    cropCtx.strokeStyle = 'rgba(255,255,255,0.4)';
-    cropCtx.stroke();
-    cropCtx.restore();
   }
 
   function openCropModal(img) {
