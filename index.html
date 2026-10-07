@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>KYHSS Shasthrolsavam Poster Generator</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
@@ -18,18 +18,23 @@
     --white: #ffffff;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+  }
   
   html {
     width: 100%;
     overflow-x: hidden;
+    background-color: #080c17;
   }
 
   body {
     width: 100%;
     margin: 0;
-    padding: 10px 8px 40px;
-    background: radial-gradient(circle at 10% 0%, #152244, #080c17 60%);
+    padding: 0 0 50px 0;
+    background: #080c17;
     font-family: 'Montserrat', sans-serif;
     color: var(--text-main);
     min-height: 100vh;
@@ -39,50 +44,49 @@
     overflow-x: hidden;
   }
 
-  h1 { 
-    font-size: 18px; 
-    font-weight: 800; 
-    margin: 4px 0 2px; 
-    text-align: center; 
+  .header-area {
     width: 100%;
-  }
-  p.subtitle { 
-    font-size: 11.5px; 
-    color: var(--text-muted); 
-    margin-bottom: 12px; 
-    text-align: center; 
-    width: 100%;
+    padding: 12px 10px 8px;
+    text-align: center;
   }
 
-  /* Expands to 100% of mobile screen width, neatly capped on laptops/desktops */
+  h1 { 
+    font-size: 17px; 
+    font-weight: 800; 
+    margin-bottom: 2px;
+  }
+  p.subtitle { 
+    font-size: 11px; 
+    color: var(--text-muted); 
+  }
+
+  /* Main wrapper fits 100% horizontally on phone, capped on desktop */
   .main-wrapper {
     width: 100%;
     max-width: 480px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+    margin: 0 auto;
   }
 
-  @media (max-width: 480px) {
-    body {
-      padding: 6px 4px 30px;
-    }
-    .main-wrapper {
-      width: 100%;
-      max-width: 100%;
-    }
-  }
-
-  /* 4:5 Poster stage filling the mobile screen edge-to-edge */
+  /* 4:5 Poster stage stretches across mobile width */
   .stage-box {
     width: 100%;
     aspect-ratio: 4 / 5;
-    border-radius: 12px;
+    border-radius: 0; /* Flush with screen edges on mobile */
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75);
-    border: 1px solid var(--border);
     background: #03060d;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
   }
+
+  @media (min-width: 500px) {
+    body { padding-top: 16px; }
+    .stage-box { border-radius: 12px; border: 1px solid var(--border); }
+    .form-card { border-radius: 14px; }
+  }
+
   .stage-box canvas {
     display: block;
     width: 100%;
@@ -90,12 +94,13 @@
     object-fit: contain;
   }
 
+  /* Form container below the poster */
   .form-card {
     width: 100%;
     background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 14px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 14px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -241,18 +246,22 @@
 </head>
 <body>
 
-  <h1>KYHSS Shasthrolsavam Poster</h1>
-  <p class="subtitle">2160 × 2700 High-Res Poster Generator</p>
+  <div class="header-area">
+    <h1>KYHSS Shasthrolsavam Poster</h1>
+    <p class="subtitle">2160 × 2700 High-Res Poster Generator</p>
+  </div>
 
   <div class="main-wrapper">
+    <!-- Edge-to-edge canvas stage -->
     <div class="stage-box">
       <canvas id="posterCanvas" width="2160" height="2700"></canvas>
     </div>
 
+    <!-- Scrollable configuration form below -->
     <div class="form-card">
       <!-- 1. Grade Selection -->
       <div class="field-group">
-        <label for="gradeSelect">Grade</label>
+        <label for="gradeSelect">Grade (Swaps Background Poster)</label>
         <select id="gradeSelect">
           <option value="A" selected>A Grade (Frame Common A.png)</option>
           <option value="B">B Grade (Frame Common B.png)</option>
@@ -337,7 +346,7 @@
 
   const LEFT_X = 340;
 
-  // Window coordinates: height is 894px (covers y: 886 to y: 1780)
+  // Window coordinates: spans y: 886 to y: 1780 (894px tall)
   const FRAME = {
     x: 1076,
     y: 886,
@@ -352,7 +361,6 @@
     lineHeight: 180
   };
 
-  // Student name sits directly below the cutout at y = 1860
   const NAME_POS = {
     x: 1440,
     y: 1860,
@@ -386,7 +394,10 @@
   function draw() {
     ctx.clearRect(0, 0, CW, CH);
 
+    // ==============================================================
     // 1. LAYER 1 (BOTTOM): DRAW STUDENT PHOTO FIRST
+    // Generous 60px overflow on every side ensures zero black edges
+    // ==============================================================
     if (photoPlacement && photoPlacement.img) {
       ctx.save();
       ctx.beginPath();
@@ -403,7 +414,9 @@
       ctx.restore();
     }
 
+    // ==============================================================
     // 2. LAYER 2 (MIDDLE): DRAW POSTER TEMPLATE ON TOP
+    // ==============================================================
     if (templateImg.complete && templateImg.naturalWidth > 0) {
       ctx.drawImage(templateImg, 0, 0, CW, CH);
     } else {
@@ -411,7 +424,9 @@
       ctx.fillRect(0, 0, CW, CH);
     }
 
+    // ==============================================================
     // 3. LAYER 3 (TOP): TEXT OVERLAYS
+    // ==============================================================
     const itemText = document.getElementById('itemInput').value.trim().toUpperCase();
     const catValue = document.getElementById('catSelect').value.trim();
     let currentY = ITEM_BLOCK.y;
@@ -466,7 +481,7 @@
       ctx.restore();
     }
 
-    // Student Name
+    // Student Name (Placed cleanly below the window)
     const nameText = document.getElementById('nameInput').value.trim().toUpperCase();
     if (nameText) {
       ctx.save();
