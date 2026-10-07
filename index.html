@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>KYHSS Shasthrolsavam Poster Generator</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
@@ -22,6 +22,8 @@
   
   html, body {
     width: 100%;
+    margin: 0;
+    padding: 0;
     overflow-x: hidden;
     background: #090e1c;
   }
@@ -34,11 +36,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px 4px 40px;
+    padding: 8px 4px 40px;
   }
 
   h1 { 
-    font-size: 18px; 
+    font-size: 17px; 
     font-weight: 800; 
     margin: 4px 0 2px; 
     text-align: center; 
@@ -52,7 +54,6 @@
     width: 100%;
   }
 
-  /* Full screen width on mobile devices */
   .main-wrapper {
     width: 100%;
     max-width: 500px;
@@ -67,7 +68,6 @@
     .stage-box { border-radius: 4px; }
   }
 
-  /* 4:5 Poster stage filling the container */
   .stage-box {
     width: 100%;
     aspect-ratio: 4 / 5;
@@ -330,12 +330,13 @@
 
   const LEFT_X = 340;
 
-  // Frame window boundaries (Extended down to 770px so bottom rounded edges never reveal black)
+  // Exact coordinates of the photo hole in your Frame Common PNG:
+  // Starts at y: 886 and goes down to y: 1776 (height = 890px)
   const FRAME = {
     x: 1076,
-    y: 880,
+    y: 886,
     w: 728,
-    h: 770
+    h: 890
   };
 
   const ITEM_BLOCK = {
@@ -345,10 +346,10 @@
     lineHeight: 180
   };
 
-  // Student name sits directly underneath the cutout
+  // Student name sits cleanly below the hole at y = 1860 (where it was originally)
   const NAME_POS = {
     x: 1440,
-    y: 1680,
+    y: 1860,
     maxWidth: 720
   };
 
@@ -380,13 +381,14 @@
     ctx.clearRect(0, 0, CW, CH);
 
     // ==============================================================
-    // 1. LAYER 1 (BOTTOM): DRAW STUDENT PHOTO
-    // Extended boundary tucks deep behind the template frame
+    // 1. LAYER 1 (BOTTOM): DRAW STUDENT PHOTO FIRST
+    // It sits completely under the poster and covers the full 890px height
     // ==============================================================
     if (photoPlacement && photoPlacement.img) {
       ctx.save();
+      // Bleed rectangle extending 30px outside the cutout so no gaps exist
       ctx.beginPath();
-      ctx.rect(FRAME.x - 20, FRAME.y - 20, FRAME.w + 40, FRAME.h + 40);
+      ctx.rect(FRAME.x - 30, FRAME.y - 30, FRAME.w + 60, FRAME.h + 60);
       ctx.clip();
 
       ctx.drawImage(
@@ -400,7 +402,8 @@
     }
 
     // ==============================================================
-    // 2. LAYER 2 (MIDDLE): DRAW THE TEMPLATE POSTER ON TOP
+    // 2. LAYER 2 (MIDDLE): DRAW POSTER TEMPLATE ON TOP
+    // The transparent hole shows the photo; the frame borders mask the edges
     // ==============================================================
     if (templateImg.complete && templateImg.naturalWidth > 0) {
       ctx.drawImage(templateImg, 0, 0, CW, CH);
@@ -410,7 +413,7 @@
     }
 
     // ==============================================================
-    // 3. LAYER 3 (TOP): DRAW TEXT OVERLAYS
+    // 3. LAYER 3 (TOP): TEXT OVERLAYS
     // ==============================================================
     const itemText = document.getElementById('itemInput').value.trim().toUpperCase();
     const catValue = document.getElementById('catSelect').value.trim();
@@ -466,7 +469,7 @@
       ctx.restore();
     }
 
-    // Student Name (Placed cleanly below photo frame)
+    // Student Name (Restored to y: 1860, directly below the frame cutout)
     const nameText = document.getElementById('nameInput').value.trim().toUpperCase();
     if (nameText) {
       ctx.save();
@@ -503,7 +506,7 @@
   let pendingImg = null, baseScale = 1, zoom = 1, panX = 0, panY = 0;
   let dragging = false, startX = 0, startY = 0, initialPanX = 0, initialPanY = 0;
   const PREVIEW_W = 230;
-  const PREVIEW_H = Math.round(PREVIEW_W * (FRAME.h / FRAME.w));
+  const PREVIEW_H = Math.round(PREVIEW_W * (FRAME.h / FRAME.w)); // Proportion matching the 728x890 hole
 
   function getCropDrawMetrics() {
     if (!pendingImg || !pendingImg.width) return { x: 0, y: 0, w: PREVIEW_W, h: PREVIEW_H };
