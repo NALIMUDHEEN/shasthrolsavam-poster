@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>KYHSS Shasthrolsavam Poster Generator</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
@@ -20,13 +20,15 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   
-  html, body {
+  html {
     width: 100%;
     overflow-x: hidden;
-    background: #090e1c;
   }
 
   body {
+    width: 100%;
+    margin: 0;
+    padding: 10px 8px 40px;
     background: radial-gradient(circle at 10% 0%, #152244, #080c17 60%);
     font-family: 'Montserrat', sans-serif;
     color: var(--text-main);
@@ -34,7 +36,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px 4px 40px;
+    overflow-x: hidden;
   }
 
   h1 { 
@@ -45,33 +47,39 @@
     width: 100%;
   }
   p.subtitle { 
-    font-size: 11px; 
+    font-size: 11.5px; 
     color: var(--text-muted); 
-    margin-bottom: 10px; 
+    margin-bottom: 12px; 
     text-align: center; 
     width: 100%;
   }
 
+  /* Expands to 100% of mobile screen width, neatly capped on laptops/desktops */
   .main-wrapper {
     width: 100%;
-    max-width: 500px;
+    max-width: 480px;
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
 
   @media (max-width: 480px) {
-    body { padding: 4px 2px 30px; }
-    .main-wrapper { max-width: 100%; }
-    .stage-box { border-radius: 4px; }
+    body {
+      padding: 6px 4px 30px;
+    }
+    .main-wrapper {
+      width: 100%;
+      max-width: 100%;
+    }
   }
 
+  /* 4:5 Poster stage filling the mobile screen edge-to-edge */
   .stage-box {
     width: 100%;
     aspect-ratio: 4 / 5;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75);
     border: 1px solid var(--border);
     background: #03060d;
   }
@@ -83,6 +91,7 @@
   }
 
   .form-card {
+    width: 100%;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 14px;
@@ -288,7 +297,7 @@
       <!-- 5. Student Name -->
       <div class="field-group">
         <label for="nameInput">Student Name</label>
-        <input type="text" id="nameInput" value="Name" placeholder="E.g. NALIMUDHEEN MUHAMMED" maxlength="40" autocomplete="off">
+        <input type="text" id="nameInput" value="NALIMUDHEEN MUHAMMED" placeholder="E.g. NALIMUDHEEN MUHAMMED" maxlength="40" autocomplete="off">
       </div>
 
       <button class="btn btn-download" type="button" id="downloadBtn">⬇ Download Poster (2160 × 2700)</button>
@@ -343,7 +352,7 @@
     lineHeight: 180
   };
 
-  // Student name sits cleanly below the window at y = 1860
+  // Student name sits directly below the cutout at y = 1860
   const NAME_POS = {
     x: 1440,
     y: 1860,
@@ -377,10 +386,7 @@
   function draw() {
     ctx.clearRect(0, 0, CW, CH);
 
-    // ==============================================================
     // 1. LAYER 1 (BOTTOM): DRAW STUDENT PHOTO FIRST
-    // Bleeds 60px past all 4 sides of the window so no gap or black lip appears
-    // ==============================================================
     if (photoPlacement && photoPlacement.img) {
       ctx.save();
       ctx.beginPath();
@@ -397,10 +403,7 @@
       ctx.restore();
     }
 
-    // ==============================================================
     // 2. LAYER 2 (MIDDLE): DRAW POSTER TEMPLATE ON TOP
-    // Cutout naturally reveals the photo and seamlessly masks borders
-    // ==============================================================
     if (templateImg.complete && templateImg.naturalWidth > 0) {
       ctx.drawImage(templateImg, 0, 0, CW, CH);
     } else {
@@ -408,9 +411,7 @@
       ctx.fillRect(0, 0, CW, CH);
     }
 
-    // ==============================================================
     // 3. LAYER 3 (TOP): TEXT OVERLAYS
-    // ==============================================================
     const itemText = document.getElementById('itemInput').value.trim().toUpperCase();
     const catValue = document.getElementById('catSelect').value.trim();
     let currentY = ITEM_BLOCK.y;
@@ -465,7 +466,7 @@
       ctx.restore();
     }
 
-    // Student Name (At y = 1860, directly beneath cutout)
+    // Student Name
     const nameText = document.getElementById('nameInput').value.trim().toUpperCase();
     if (nameText) {
       ctx.save();
@@ -502,7 +503,7 @@
   let pendingImg = null, baseScale = 1, zoom = 1, panX = 0, panY = 0;
   let dragging = false, startX = 0, startY = 0, initialPanX = 0, initialPanY = 0;
   const PREVIEW_W = 230;
-  const PREVIEW_H = Math.round(PREVIEW_W * (FRAME.h / FRAME.w)); // Exact 728x894 ratio
+  const PREVIEW_H = Math.round(PREVIEW_W * (FRAME.h / FRAME.w));
 
   function getCropDrawMetrics() {
     if (!pendingImg || !pendingImg.width) return { x: 0, y: 0, w: PREVIEW_W, h: PREVIEW_H };
@@ -546,7 +547,7 @@
     const naturalH = img.naturalHeight || img.height || 1;
 
     baseScale = Math.max(PREVIEW_W / naturalW, PREVIEW_H / naturalH);
-    zoom = 1.05; // 5% overscale to prevent border gaps
+    zoom = 1.05;
     panX = 0; panY = 0; zoomRange.value = 105;
     
     drawCropPreview();
